@@ -30,7 +30,6 @@ RUN \
     debhelper \
     devscripts \
     dh-python \
-    libcli11-dev \
     ninja-build \
     python3-all-dev \
     python3-setuptools && \

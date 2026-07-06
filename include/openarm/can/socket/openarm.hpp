@@ -34,12 +34,10 @@ public:
     // Component initialization
     void init_arm_motors(const std::vector<damiao_motor::MotorType>& motor_types,
                          const std::vector<uint32_t>& send_can_ids,
-                         const std::vector<uint32_t>& recv_can_ids,
-                         const std::vector<damiao_motor::ControlMode>& control_modes = {});
+                         const std::vector<uint32_t>& recv_can_ids);
 
-    void init_gripper_motor(
-        damiao_motor::MotorType motor_type, uint32_t send_can_id, uint32_t recv_can_id,
-        damiao_motor::ControlMode control_mode = damiao_motor::ControlMode::MIT);
+    void init_gripper_motor(damiao_motor::MotorType motor_type, uint32_t send_can_id,
+                            uint32_t recv_can_id);
 
     // Component access
     ArmComponent& get_arm() { return *arm_; }
@@ -55,10 +53,9 @@ public:
     void refresh_all();
 
     void refresh_one(int i);
-    // The timeout for reading the first response from socket, set to
-    // timeout_us. Tuning this value may improve the performance but
-    // should be done with caution.
-    void recv_all(int first_timeout_us = 500);
+    // The timeout for reading from socket, set to timeout_us.
+    // Tuning this value may improve the performance but should be done with caution.
+    void recv_all(int timeout_us = 500);
     void set_callback_mode_all(damiao_motor::CallbackMode callback_mode);
     void query_param_all(int RID);
 

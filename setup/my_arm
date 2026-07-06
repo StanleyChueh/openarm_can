@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ip link set can0 down
+ip link set can0 type can bitrate 1000000 dbitrate 5000000 fd on
+ip link set can0 up
+
+ip link set can1 down
+ip link set can1 type can bitrate 1000000 dbitrate 5000000 fd on
+ip link set can1 up
+
+ip link set can2 down
+ip link set can2 type can bitrate 1000000 dbitrate 5000000 fd on
+ip link set can2 up
+
+ip link set can3 down
+ip link set can3 type can bitrate 1000000 dbitrate 5000000 fd on
+ip link set can3 up

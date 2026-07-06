@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 
@@ -121,13 +120,6 @@ NB_MODULE(openarm_can, m) {
         .value("IGNORE", CallbackMode::IGNORE)
         .export_values();
 
-    nb::enum_<ControlMode>(m, "ControlMode")
-        .value("MIT", ControlMode::MIT)
-        .value("POS_VEL", ControlMode::POS_VEL)
-        .value("VEL", ControlMode::VEL)
-        .value("POS_FORCE", ControlMode::POS_FORCE)
-        .export_values();
-
     // ============================================================================
     // DAMIAO MOTOR NAMESPACE - STRUCTS
     // ============================================================================
@@ -188,20 +180,6 @@ NB_MODULE(openarm_can, m) {
             nb::arg("q"), nb::arg("dq"))
         .def_rw("q", &PosVelParam::q)
         .def_rw("dq", &PosVelParam::dq);
-
-    // PosForceParam struct
-    nb::class_<PosForceParam>(m, "PosForceParam")
-        .def(nb::init<>())
-        .def(
-            "__init__",
-            [](PosForceParam* param, double q, double dq, double i) {
-                new (param) PosForceParam(PosForceParam{q, dq, i});
-            },
-            nb::arg("q"), nb::arg("dq"), nb::arg("i"))
-        .def_rw("q", &PosForceParam::q)
-        .def_rw("dq", &PosForceParam::dq)
-        .def_rw("i", &PosForceParam::i);
-
     // ============================================================================
     // DAMIAO MOTOR NAMESPACE - MAIN CLASSES
     // ============================================================================
@@ -237,9 +215,6 @@ NB_MODULE(openarm_can, m) {
         .def_static("create_posvel_control_command",
                     &CanPacketEncoder::create_posvel_control_command, nb::arg("motor"),
                     nb::arg("posvel_param"))
-        .def_static("create_posforce_control_command",
-                    &CanPacketEncoder::create_posforce_control_command, nb::arg("motor"),
-                    nb::arg("posforce_param"))
         .def_static("create_query_param_command", &CanPacketEncoder::create_query_param_command,
                     nb::arg("motor"), nb::arg("rid"));
 
@@ -390,9 +365,6 @@ NB_MODULE(openarm_can, m) {
         .def("set_callback_mode_all", &DMDeviceCollection::set_callback_mode_all,
              nb::arg("callback_mode"))
         .def("query_param_all", &DMDeviceCollection::query_param_all, nb::arg("rid"))
-        .def("set_control_mode_one", &DMDeviceCollection::set_control_mode_one, nb::arg("index"),
-             nb::arg("mode"))
-        .def("set_control_mode_all", &DMDeviceCollection::set_control_mode_all, nb::arg("mode"))
         .def("mit_control_one", &DMDeviceCollection::mit_control_one, nb::arg("index"),
              nb::arg("mit_param"))
         .def("mit_control_all", &DMDeviceCollection::mit_control_all, nb::arg("mit_params"))
@@ -400,10 +372,6 @@ NB_MODULE(openarm_can, m) {
              nb::arg("posvel_param"))
         .def("posvel_control_all", &DMDeviceCollection::posvel_control_all,
              nb::arg("posvel_params"))
-        .def("posforce_control_one", &DMDeviceCollection::posforce_control_one, nb::arg("index"),
-             nb::arg("posforce_param"))
-        .def("posforce_control_all", &DMDeviceCollection::posforce_control_all,
-             nb::arg("posforce_params"))
         .def("get_motors", &DMDeviceCollection::get_motors)
         .def("get_device_collection", &DMDeviceCollection::get_device_collection,
              nb::rv_policy::reference);
@@ -412,29 +380,15 @@ NB_MODULE(openarm_can, m) {
     nb::class_<ArmComponent, DMDeviceCollection>(m, "ArmComponent")
         .def(nb::init<CANSocket&>(), nb::arg("can_socket"))
         .def("init_motor_devices", &ArmComponent::init_motor_devices, nb::arg("motor_types"),
-             nb::arg("send_can_ids"), nb::arg("recv_can_ids"), nb::arg("use_fd"),
-             nb::arg("control_modes") = std::vector<ControlMode>{});
+             nb::arg("send_can_ids"), nb::arg("recv_can_ids"), nb::arg("use_fd"));
 
     // GripperComponent class
     nb::class_<GripperComponent, DMDeviceCollection>(m, "GripperComponent")
         .def(nb::init<CANSocket&>(), nb::arg("can_socket"))
         .def("init_motor_device", &GripperComponent::init_motor_device, nb::arg("motor_type"),
-             nb::arg("send_can_id"), nb::arg("recv_can_id"), nb::arg("use_fd"),
-             nb::arg("control_mode") = ControlMode::MIT)
-        .def("set_limit", &GripperComponent::set_limit, nb::arg("speed_rad_s"),
-             nb::arg("torque_pu"),
-             "Set default gripper limits for pos-force control.\n"
-             "speed_rad_s: max closing speed in rad/s.\n"
-             "torque_pu: per-unit current limit [0, 1].")
-        .def("set_position", &GripperComponent::set_position, nb::arg("position"),
-             nb::arg("speed_rad_s") = nb::none(), nb::arg("torque_pu") = nb::none(),
-             "Command gripper position with optional per-call limit overrides.\n"
-             "position: gripper target (0=closed, 1=open).\n"
-             "speed_rad_s: max closing speed in rad/s.\n"
-             "torque_pu: per-unit current limit [0, 1].")
-        .def("set_zero", &GripperComponent::set_zero, "Set current position as zero.")
-        .def("set_position_mit", &GripperComponent::set_position_mit, nb::arg("position"),
-             nb::arg("kp") = 50.0, nb::arg("kd") = 1.0)
+             nb::arg("send_can_id"), nb::arg("recv_can_id"), nb::arg("use_fd"))
+        .def("open", &GripperComponent::open, nb::arg("kp") = 50.0, nb::arg("kd") = 1.0)
+        .def("close", &GripperComponent::close, nb::arg("kp") = 50.0, nb::arg("kd") = 1.0)
         .def("get_motor", &GripperComponent::get_motor, nb::rv_policy::reference_internal);
 
     // OpenArm class (main high-level interface)
@@ -442,11 +396,9 @@ NB_MODULE(openarm_can, m) {
         .def(nb::init<const std::string&, bool>(), nb::arg("can_interface"),
              nb::arg("enable_fd") = false)
         .def("init_arm_motors", &OpenArm::init_arm_motors, nb::arg("motor_types"),
-             nb::arg("send_can_ids"), nb::arg("recv_can_ids"),
-             nb::arg("control_modes") = std::vector<ControlMode>{})
+             nb::arg("send_can_ids"), nb::arg("recv_can_ids"))
         .def("init_gripper_motor", &OpenArm::init_gripper_motor, nb::arg("motor_type"),
-             nb::arg("send_can_id"), nb::arg("recv_can_id"),
-             nb::arg("control_mode") = ControlMode::MIT)
+             nb::arg("send_can_id"), nb::arg("recv_can_id"))
         .def("get_arm", &OpenArm::get_arm, nb::rv_policy::reference)
         .def("get_gripper", &OpenArm::get_gripper, nb::rv_policy::reference)
         .def("get_master_can_device_collection", &OpenArm::get_master_can_device_collection,
@@ -455,7 +407,7 @@ NB_MODULE(openarm_can, m) {
         .def("disable_all", &OpenArm::disable_all)
         .def("set_zero_all", &OpenArm::set_zero_all)
         .def("refresh_all", &OpenArm::refresh_all)
-        .def("recv_all", &OpenArm::recv_all, nb::arg("first_timeout_us") = 500)
+        .def("recv_all", &OpenArm::recv_all, nb::arg("timeout_us") = 500)
         .def("set_callback_mode_all", &OpenArm::set_callback_mode_all, nb::arg("callback_mode"))
         .def("query_param_all", &OpenArm::query_param_all, nb::arg("rid"));
 }

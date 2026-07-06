@@ -30,7 +30,6 @@ RUN \
     debhelper \
     devscripts \
     dh-python \
-    libcli11-dev \
     nanobind-dev \
     ninja-build \
     pybuild-plugin-pyproject \

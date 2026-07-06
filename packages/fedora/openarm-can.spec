@@ -13,7 +13,7 @@
 # limitations under the License.
 
 Name:           openarm-can
-Version:        1.2.9
+Version:        1.2.2
 Release:        %{autorelease}
 Summary:        OpenArm CAN control library
 
@@ -21,7 +21,6 @@ License:        Apache-2.0
 URL:            https://docs.openarm.dev/software/can
 Source:         https://github.com/enactic/openarm_can/archive/%{version}/openarm_can-%{version}.tar.gz
 
-BuildRequires:  cli11-devel
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
 
@@ -69,12 +68,14 @@ Setup and configuration utility scripts.
 
 %files utils
 %license LICENSE.txt
-%{_bindir}/openarm-can-cli
+%{_bindir}/openarm-can-change-baudrate
+%{_bindir}/openarm-can-configure-socketcan
 %{_bindir}/openarm-can-configure-socketcan-4-arms
 %{_bindir}/openarm-can-demo
-%{_bindir}/openarm-can-motor-sampling-check
+%{_bindir}/openarm-can-diagnosis
+%{_bindir}/openarm-can-motor-check
+%{_bindir}/openarm-can-set-zero
 %{_bindir}/openarm-can-zero-position-calibration
-%{_datadir}/bash-completion/completions/openarm-can-cli
 
 %changelog
 %autochangelog

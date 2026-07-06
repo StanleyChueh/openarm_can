@@ -27,20 +27,11 @@ repositories_dir=/host/packages/apt/repositories
 apt install -V -y \
     "${repositories_dir}"/"${distribution}"/pool/"${code_name}"/*/*/*/*_"${architecture}".deb
 
-openarm-can-cli -h
-openarm-can-cli can_configure -h
-openarm-can-cli change_baud -h
-openarm-can-cli change_id -h
-openarm-can-cli clear_error -h
-openarm-can-cli disable -h
-openarm-can-cli discover -h
-openarm-can-cli enable -h
-openarm-can-cli monitor -h
-openarm-can-cli set_zero -h
-openarm-can-cli show_param -h
-openarm-can-cli write_param -h
+openarm-can-change-baudrate -h
+openarm-can-configure-socketcan -h
 openarm-can-configure-socketcan-4-arms -h
-openarm-can-motor-sampling-check -h
-openarm-can-zero-position-calibration -h
+openarm-can-diagnosis -h
+openarm-can-motor-check -h
+openarm-can-set-zero -h
 
 python3 -c "import openarm_can"

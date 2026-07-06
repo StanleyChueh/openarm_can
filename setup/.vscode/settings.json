@@ -1,0 +1,4 @@
+{
+    "python.analysis.stubPath": "typings",
+    "C_Cpp.dimInactiveRegions": false
+}
